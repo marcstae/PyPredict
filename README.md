@@ -1,25 +1,33 @@
 # PyPredict
 
-PyPredict is a Python script that predicts the time of the next event based on past event times using the ARIMA (AutoRegressive Integrated Moving Average) time series forecasting model. The script accepts input times in the hh:mm format in the 24-hour time format.
+PyPredict is a Python script that uses the ARIMA (AutoRegressive Integrated Moving Average) time series forecasting model to predict the time of the next event. The script takes a list of past event times in the format hh:mm (24-hour time format) as input and outputs the predicted time of the next event.
+
+## Requirements
+- Python 3.6 or higher
+- NumPy
+- pandas
+- statsmodels
 
 ## Installation
 
-To run PyPredict, you will need to install the statsmodels library. You can install it using pip:
+Clone the repository:
+git clone https://github.com/yourusername/PyPredict.git
 
+Install the required Python packages:
 ```bash
-pip install statsmodels
+pip install numpy pandas statsmodels
 ```
-
-If you're using a virtual environment, make sure to activate it before installing the package.
 
 ## Usage
-Run the script from the command line with the past event times as arguments:
+Run the script by providing a list of past event times as command-line arguments. Ensure that each time is in the hh:mm format (24-hour time format).
 
 ```bash
-python predict_next_event.py 01:30 03:00 04:30 06:00
+python predict_next_event.py 09:00 10:30 12:00 13:30
 ```
+The script will output the predicted time of the next event:
+The predicted time of the next event: 15:00
 
-The script will output the predicted time of the next event in the hh:mm format using the ARIMA model. The ARIMA model's accuracy depends on the nature of your data and the chosen order parameters (p, d, q). You might need to fine-tune these parameters for better predictions.
+
 
 
 
