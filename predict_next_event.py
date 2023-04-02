@@ -1,6 +1,7 @@
 import sys
 import numpy as np
-from sklearn.linear_model import LinearRegression
+import pandas as pd
+from statsmodels.tsa.arima.model import ARIMA
 
 def parse_time(time_str):
     hh, mm = time_str.split(':')
@@ -13,19 +14,18 @@ def format_time(minutes):
 
 def main(past_event_times):
     # Convert the input event times to minutes and numpy arrays
-    past_event_times = np.array([parse_time(t) for t in past_event_times]).reshape(-1, 1)
+    past_event_minutes = [parse_time(t) for t in past_event_times]
     
-    # Create an array with event indices
-    event_indices = np.arange(len(past_event_times)).reshape(-1, 1)
-    
-    # Train a linear regression model
-    model = LinearRegression()
-    model.fit(event_indices, past_event_times)
-    
-    # Predict the next event index
-    next_event_index = len(past_event_times)
-    next_event_minutes = model.predict([[next_event_index]])[0][0]
-    
+    # Convert the list of event times to a pandas Series
+    time_series = pd.Series(past_event_minutes)
+
+    # Fit the ARIMA model
+    model = ARIMA(time_series, order=(1, 1, 0))
+    model_fit = model.fit()
+
+    # Predict the next event time
+    next_event_minutes = model_fit.forecast(steps=1).iloc[0]
+
     return format_time(int(round(next_event_minutes)))
 
 if __name__ == "__main__":
@@ -37,5 +37,3 @@ if __name__ == "__main__":
     next_event_time = main(past_event_times)
     
     print(f"The predicted time of the next event: {next_event_time}")
-
-#python predict_next_event.py 01:30 03:00 04:30 06:00
