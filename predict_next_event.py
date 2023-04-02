@@ -21,7 +21,7 @@ def main(past_event_times):
 
     # Fit the ARIMA model
     model = ARIMA(time_series, order=(1, 1, 0))
-    model_fit = model.fit()
+    model_fit = model.fit(method_kwargs={'maxiter': 500})
 
     # Predict the next event time
     next_event_minutes = model_fit.forecast(steps=1).iloc[0]
