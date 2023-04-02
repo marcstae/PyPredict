@@ -11,7 +11,7 @@ PyPredict is a Python script that uses the ARIMA (AutoRegressive Integrated Movi
 ## Installation
 
 Clone the repository:
-git clone https://github.com/yourusername/PyPredict.git
+git clone https://github.com/marcstae/PyPredict.git
 
 Install the required Python packages:
 ```bash
