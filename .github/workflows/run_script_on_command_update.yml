@@ -27,3 +27,10 @@ jobs:
         command=$(cat command.txt)
         echo "Running command: $command"
         $command
+
+    - name: Send to Discord
+      run: |
+        curl -H "Content-Type: application/json" \
+             -X POST \
+             -d "{\"content\": \"The predicted time of the next event: $(cat output.txt)\"}" \
+             ${{ https://discord.com/api/webhooks/1158749595321499718/lMNHOABfaP6A8mw3vlQKuOEqESzcK7FyXjTmOsRL7r2LIfXWMlwiXVrpOaXGffC_X7bS }}
