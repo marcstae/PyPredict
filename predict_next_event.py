@@ -1,59 +1,46 @@
 import sys
 import numpy as np
 import pandas as pd
-from statsmodels.tsa.arima.model import ARIMA
-from statsmodels.tsa.stattools import adfuller
+from pmdarima import auto_arima
+from sklearn.metrics import mean_absolute_error
 import warnings
 
 warnings.filterwarnings("ignore")
 
+def train_test_split(data, test_size=0.2):
+    split_index = int(len(data) * (1 - test_size))
+    train, test = data[:split_index], data[split_index:]
+    return train, test
 
-def find_optimal_d(time_series, max_d):
-    best_d = 0
-    best_aic = np.inf
-
-    for d in range(max_d + 1):
-        try:
-            test_result = adfuller(time_series.diff(d).dropna())
-            if test_result[1] < 0.05:
-                return d
-        except ValueError:
-            continue
-
-    return best_d
-
-
-def find_optimal_arima_order(time_series, max_p=3, max_d=2, max_q=3):
-    d = find_optimal_d(time_series, max_d)
-    best_order = (0, d, 0)
-    best_aic = np.inf
-
-    for p in range(max_p + 1):
-        for q in range(max_q + 1):
-            try:
-                model = ARIMA(time_series, order=(p, d, q))
-                model_fit = model.fit()
-                current_aic = model_fit.aic
-                if current_aic < best_aic:
-                    best_aic = current_aic
-                    best_order = (p, d, q)
-            except:
-                continue
-
-    return best_order
-
+def evaluate_model(time_series):
+    train, test = train_test_split(time_series)
+    
+    model = auto_arima(train, seasonal=True, trace=True,
+                      error_action='ignore', suppress_warnings=True, stepwise=True)
+    
+    predictions = model.predict(n_periods=len(test))
+    
+    mae = mean_absolute_error(test, predictions)
+    
+    return model, mae
 
 def main(past_event_times):
+    # Preprocessing: Convert time string to minutes
     time_series = pd.Series([int(time.split(':')[0]) * 60 + int(time.split(':')[1]) for time in past_event_times])
-
-    arima_order = find_optimal_arima_order(time_series)
-    model = ARIMA(time_series, order=arima_order)
-    model_fit = model.fit()
-
-    next_event_minutes = model_fit.forecast(steps=1).iloc[0]
+    
+    model, mae = evaluate_model(time_series)
+    print(f'Mean Absolute Error on Test Data: {mae:.2f} minutes')
+    
+    # Analyzing residuals
+    residuals = pd.Series(model.resid())
+    if residuals.autocorr() > 0.05: # this threshold can be adjusted
+        print("Warning: Residuals have some correlation left. Model may benefit from further tuning.")
+    
+    # Forecast the next event time
+    next_event_minutes = model.predict(n_periods=1)[0]
     next_event_time = f'{int(next_event_minutes // 60):02d}:{int(next_event_minutes % 60):02d}'
+    
     return next_event_time
-
 
 if __name__ == '__main__':
     past_event_times = sys.argv[1:]
